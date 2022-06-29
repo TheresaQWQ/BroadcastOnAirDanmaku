@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BroadcastOnAirDanmaku</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="list"></div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const container = document.querySelector('.list');
+    const room = window.location.hash.slice(1);
+
+    const time = Number([...document.styleSheets[0].cssRules].filter(item => item.selectorText === '.list')[0].style.getPropertyValue("--time").trim().replace('ms', ''))
+    const size = Number([...document.styleSheets[0].cssRules].filter(item => item.selectorText === '.list')[0].style.getPropertyValue("--size").trim().replace('px', ''))
+
+    const addItem = (avatar, name, message, color) => {
+      let end = () => {}
+      
+      const item = document.createElement('div');
+      item.classList.add('item');
+
+      item.style.top = `${Math.random() * 95}%`;
+
+      const avatarImg = document.createElement('img');
+      avatarImg.crossOrigin = 'anonymous'
+      avatarImg.src = avatar;
+      avatarImg.classList.add('avatar');
+      item.appendChild(avatarImg);
+
+      avatarImg.onerror = () => {
+        avatarImg.style.display = 'none'
+        end()
+      };
+
+      avatarImg.onload = () => {
+        end()
+      }
+
+      if (name) {
+        const nameP = document.createElement('p');
+        nameP.classList.add('name');
+        nameP.innerText = `${name}: `;
+        nameP.style.color = color;
+        item.appendChild(nameP);
+      }
+
+      const messageP = document.createElement('p');
+      messageP.classList.add('message');
+      messageP.appendChild(message)
+      item.appendChild(messageP);
+
+      if (avatarImg.complete) {
+        container.appendChild(item);
+        setTimeout(() => {
+          container.removeChild(item)
+        }, time - 50);
+      } else {
+        end = () => {
+          container.appendChild(item);
+          setTimeout(() => {
+            container.removeChild(item)
+          }, time - 50);
+        }
+      }
+    };
+    
+    const socket = io();
+
+    socket.emit('conn', room)
+
+    socket.on('msg', data => {
+      const info = data.info;
+      const u = new URL(window.location.href)
+
+      const username = info[2][1]
+      const uid = info[2][0]
+      const extra = JSON.parse(info[0][15].extra)
+      const color = extra.color.toString(16)
+      const avatar = `/avatar/${uid}`
+      const isEmoticons = info[0][13] !== '{}'
+      const emoticons = info[0][13]
+      let message = null
+
+      if (isEmoticons) {
+        const url = emoticons.url
+        
+        const parent = document.createElement('div')
+        const img = document.createElement('img')
+
+        img.src = `/proxy/image?url=${encodeURIComponent(url)}`
+        img.style.height = `${size}px`
+        parent.appendChild(img)
+
+        message = img
+      } else {
+        const p = document.createElement('p')
+        p.innerText = info[1]
+        p.style.color = `#${color}`
+        message = p
+      }
+
+      addItem(u.searchParams.get('avatar') === 'false' ? '' : avatar, u.searchParams.get('name') === 'false' ? '' : username, message, `#${color}`)
+    })
+  </script>
+</body>
+</html>
