@@ -5,6 +5,13 @@ const bili = require('bilibili-live-ws')
 const axios = require('axios').default
 const danmuLogger = require('./logger')
 
+const getArgv = (key) => {
+  const argv = process.argv.slice(2)
+  const index = argv.indexOf(key)
+  if (index === -1) return null
+  return argv[index + 1]
+}
+
 const app = express()
 const server = http.createServer(app)
 const io = new Server(server);
@@ -57,6 +64,8 @@ app.get('/proxy/image', async (req, res) => {
   }
 })
 
-server.listen(3000, () => {
-  console.log('listening on *:3000')
+const port = Number(getArgv('--port'))
+
+server.listen(port || 3000, () => {
+  console.log(`listening on *:${port || 3000}`)
 })
