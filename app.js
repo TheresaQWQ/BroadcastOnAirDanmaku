@@ -19,8 +19,8 @@ const io = new Server(server);
 app.use('/', express.static('public'))
 
 io.on('connection', (socket) => {
-  socket.on('conn', (room) => {
-    const live = new bili.LiveTCP(Number(room))
+  socket.on('conn', async (room) => {
+    const live = new bili.LiveTCP(await bili.getRoomid(Number(room)))
 
     live.on('DANMU_MSG', data => {
       const info = data.info;

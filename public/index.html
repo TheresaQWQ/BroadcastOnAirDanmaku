@@ -93,7 +93,7 @@
         const img = document.createElement('img')
 
         img.src = `/proxy/image?url=${encodeURIComponent(url)}`
-        img.style.height = `${size}px`
+        img.style.height = `${size + 4}px`
         parent.appendChild(img)
 
         message = img
