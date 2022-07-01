@@ -9,7 +9,7 @@ html, body, .list {
 
 @keyframes danmu {
   0% {
-    right: -20vw;
+    right: -50vw;
   }
 
   100% {
@@ -18,7 +18,7 @@ html, body, .list {
 }
 
 .list {
-  --time: 8000ms;
+  --time: 10000ms;
   --size: 24px;
   --avatar: inline-block;
   --font-weight: bold;
@@ -48,5 +48,5 @@ html, body, .list {
   vertical-align: middle;
   margin: 4px 6px;
   color: #fff;
-  text-shadow: 0 0 2px #000;
+  text-shadow: 1px 1px 2px #000;
 }

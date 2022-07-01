@@ -13,7 +13,9 @@
   <script src="/socket.io/socket.io.js"></script>
   <script>
     const container = document.querySelector('.list');
-    const room = window.location.hash.slice(1);
+    const u = new URL(window.location.href)
+    const room = u.searchParams.get('room')
+    const rate = Number(u.searchParams.get('rate')) || 1
 
     const time = Number([...document.styleSheets[0].cssRules].filter(item => item.selectorText === '.list')[0].style.getPropertyValue("--time").trim().replace('ms', ''))
     const size = Number([...document.styleSheets[0].cssRules].filter(item => item.selectorText === '.list')[0].style.getPropertyValue("--size").trim().replace('px', ''))
@@ -30,16 +32,14 @@
       avatarImg.crossOrigin = 'anonymous'
       avatarImg.src = avatar;
       avatarImg.classList.add('avatar');
-      item.appendChild(avatarImg);
+      
+      avatarImg.onload = () => {
+        item.appendChild(avatarImg);
+      }
 
       avatarImg.onerror = () => {
         avatarImg.style.display = 'none'
-        end()
       };
-
-      avatarImg.onload = () => {
-        end()
-      }
 
       if (name) {
         const nameP = document.createElement('p');
@@ -54,24 +54,19 @@
       messageP.appendChild(message)
       item.appendChild(messageP);
 
-      if (avatarImg.complete) {
-        container.appendChild(item);
-        setTimeout(() => {
-          container.removeChild(item)
-        }, time - 50);
-      } else {
-        end = () => {
-          container.appendChild(item);
-          setTimeout(() => {
-            container.removeChild(item)
-          }, time - 50);
-        }
-      }
+      container.appendChild(item);
+      setTimeout(() => {
+        container.removeChild(item)
+      }, time - 50);
     };
     
     const socket = io();
 
     socket.emit('conn', room)
+
+    socket.on('error', err => {
+      alert("后端错误：" + err)
+    })
 
     socket.on('msg', data => {
       const info = data.info;
@@ -104,7 +99,11 @@
         message = p
       }
 
-      addItem(u.searchParams.get('avatar') === 'false' ? '' : avatar, u.searchParams.get('name') === 'false' ? '' : username, message, `#${color}`)
+      if (Math.random() > rate) return
+
+      setTimeout(() => {
+        addItem(u.searchParams.get('avatar') === 'false' ? '' : avatar, u.searchParams.get('name') === 'false' ? '' : username, message, `#${color}`)
+      }, Math.random() * 200);
     })
   </script>
 </body>

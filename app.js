@@ -20,22 +20,30 @@ app.use('/', express.static('public'))
 
 io.on('connection', (socket) => {
   socket.on('conn', async (room) => {
-    const live = new bili.LiveTCP(await bili.getRoomid(Number(room)))
+    try {
+      console.log(`connecting to room ${room}`)
+      const live = new bili.LiveTCP(await bili.getRoomid(Number(room)))
 
-    live.on('DANMU_MSG', data => {
-      const info = data.info;
-      const username = info[2][1]
-      const uid = info[2][0]
-      const msg = info[1]
-      
-      socket.emit('msg', data)
+      live.on('DANMU_MSG', data => {
+        const info = data.info;
+        const username = info[2][1]
+        const uid = info[2][0]
+        const msg = info[1]
+        
+        socket.emit('msg', data)
 
-      danmuLogger(room, `${username} (${uid})`, msg)
-    })
+        danmuLogger(room, `${username} (${uid})`, msg)
+      })
 
-    socket.on('disconnect', () => {
-      live.close()
-    })
+      socket.on('disconnect', () => {
+        live.close()
+        console.log(`disconnected from room ${room}`)
+      })
+
+      console.log('connected to room', room)
+    } catch (error) {
+      socket.emit('error', error.message)
+    }
   })
 })
 
