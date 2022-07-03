@@ -32,13 +32,10 @@
       avatarImg.crossOrigin = 'anonymous'
       avatarImg.src = avatar;
       avatarImg.classList.add('avatar');
-      
-      avatarImg.onload = () => {
-        item.appendChild(avatarImg);
-      }
+      item.appendChild(avatarImg);
 
       avatarImg.onerror = () => {
-        avatarImg.style.display = 'none'
+        avatarImg.src = "https://i0.hdslb.com/bfs/face/member/noface.jpg"
       };
 
       if (name) {
